@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K예술영재 프로젝트 | 음악 워크숍 만족도 조사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+  :root{
+    --navy:#2f4f62;
+    --navy-deep:#1f3746;
+    --gold:#eec97a;
+    --gold-soft:#f5dda3;
+    --gold-deep:#c9973f;
+    --cream:#faf7ef;
+    --card:#ffffff;
+    --ink:#211d1a;
+    --ink-soft:#6b6459;
+    --line:#e7ddc4;
+    --shadow: 0 18px 40px -20px rgba(31,55,70,0.28);
+    --serif-kr:'Noto Serif KR', serif;
+    --serif-en:'Cormorant Garamond', serif;
+    --sans:'PretendardVariable','Pretendard', -apple-system, sans-serif;
+    --nav-h: 84px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--cream);
+    background-image: radial-gradient(circle at 90% 95%, rgba(238,201,122,0.14), transparent 45%);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom: calc(var(--nav-h) + 14px);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---------- corner ornament (echoes leaflet's gold-wedge + navy diamond corner motif) ---------- */
+  .corner{
+    position:absolute; width:30px; height:30px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cpath d='M0,0 L60,0 L0,60 Z' fill='%23EEC97A'/%3E%3Crect x='9' y='9' width='13' height='13' fill='%231F3746' transform='rotate(45 15.5 15.5)'/%3E%3C/svg%3E");
+    background-size:contain; background-repeat:no-repeat;
+    pointer-events:none;
+  }
+  .corner-tl{top:-1px; left:-1px;}
+  .corner-tr{top:-1px; right:-1px; transform:scaleX(-1);}
+  .corner-bl{bottom:-1px; left:-1px; transform:scaleY(-1);}
+  .corner-br{bottom:-1px; right:-1px; transform:scale(-1,-1);}
+  .corner.small{width:22px; height:22px;}
+
+  /* ---------- top ribbon progress ---------- */
+  #ribbonTrack{
+    position:fixed; top:0; left:0; right:0; height:4px; z-index:100;
+    background:var(--line);
+  }
+  #ribbonFill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--gold-soft), var(--gold), var(--gold-deep));
+    transition:width .45s cubic-bezier(.65,0,.35,1);
+  }
+
+  .stage{
+    max-width:600px; margin:0 auto;
+    padding:14px 22px 20px;
+    min-height:calc(100vh - var(--nav-h));
+    display:flex; flex-direction:column; justify-content:center;
+  }
+
+  /* ---------- slides ---------- */
+  .slide{ display:none; flex-direction:column; }
+  .slide.active{
+    display:flex;
+    animation: slideIn .55s cubic-bezier(.19,1,.22,1) both;
+  }
+  @keyframes slideIn{
+    from{opacity:0; transform:translateY(20px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ---------- intro slide : navy poster panel ---------- */
+  .intro-panel{
+    position:relative;
+    background:linear-gradient(160deg, var(--navy), var(--navy-deep));
+    border:1px solid var(--gold-deep);
+    padding:44px 30px 34px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .lockup-text{ margin:0 auto 22px; }
+  .lockup-year{
+    font-family:var(--serif-en); font-weight:700; font-size:clamp(30px,7vw,40px);
+    color:#fff; line-height:1.1; letter-spacing:.02em;
+  }
+  .lockup-name{
+    font-family:var(--serif-kr); font-weight:900; font-size:clamp(24px,5.6vw,32px);
+    color:var(--gold); line-height:1.3; margin-top:2px;
+  }
+  .lockup-sub-row{ display:flex; align-items:center; gap:12px; margin-top:10px; }
+  .lockup-line{ flex:1; height:1px; background:var(--gold-deep); }
+  .lockup-sub{ font-size:13px; font-weight:600; color:#fff; white-space:nowrap; }
+  .rule{
+    width:56px; height:1px; margin:20px auto;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  h1.title{
+    font-family:var(--serif-kr);
+    font-weight:900;
+    font-size:clamp(26px,5.6vw,34px);
+    line-height:1.4;
+    margin:0;
+    color:#fff;
+    letter-spacing:-0.01em;
+  }
+  .intro-body{
+    font-size:14px;
+    color:#cfd9de;
+    line-height:1.85;
+    max-width:440px;
+    margin:0 auto 24px;
+  }
+  .intro-body b{color:var(--gold); font-weight:700;}
+  .intro-meta{
+    display:flex; justify-content:center;
+    border-top:1px solid rgba(238,201,122,0.3); border-bottom:1px solid rgba(238,201,122,0.3);
+    padding:18px 0; margin:0 auto 22px; max-width:400px;
+  }
+  .intro-meta .meta-item{flex:1; text-align:center;}
+  .intro-meta .meta-item + .meta-item{border-left:1px solid rgba(238,201,122,0.3);}
+  .meta-num{
+    font-family:var(--serif-en); font-size:23px; font-weight:700; color:var(--gold);
+    display:block; margin-bottom:4px;
+  }
+  .meta-label{font-size:11px; color:#a9b7bf;}
+  .intro-event{
+    font-size:12.5px; color:var(--gold-soft); letter-spacing:.02em; margin:0;
+    font-weight:500;
+  }
+
+  /* ---------- movement card ---------- */
+  .movement{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--line);
+    padding:38px 32px;
+    box-shadow:var(--shadow);
+  }
+
+  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .m-num{
+    width:36px; height:36px; border-radius:50%; flex:none;
+    background:var(--navy); border:1.5px solid var(--gold);
+    color:var(--gold); font-family:var(--serif-en); font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .m-tag{
+    font-family:var(--sans); font-weight:700; letter-spacing:.16em;
+    font-size:11px; color:var(--navy); text-transform:uppercase;
+  }
+  .m-rule{ flex:1; height:1px; background:var(--line); }
+
+  .m-title{
+    font-family:var(--serif-kr);
+    font-weight:700;
+    font-size:20px;
+    line-height:1.5;
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .m-desc{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:0 0 26px;
+  }
+
+  /* ---------- scale rows (large touch targets) ---------- */
+  .scale-block{display:flex; flex-direction:column; gap:34px;}
+  .scale-item{padding-bottom:30px; border-bottom:1px dashed var(--line);}
+  .scale-item:last-child{border-bottom:none; padding-bottom:0;}
+  .item-label{font-size:15.5px; font-weight:600; color:var(--ink); margin:0 0 18px; line-height:1.5;}
+
+  .scale-dots{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .scale-btn{
+    width:clamp(48px, 13vw, 64px);
+    height:clamp(48px, 13vw, 64px);
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    background:var(--cream);
+    color:var(--ink-soft);
+    font-family:var(--serif-en);
+    font-size:clamp(17px, 4vw, 21px); font-weight:700;
+    cursor:pointer;
+    transition:all .25s ease;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .scale-btn:hover{border-color:var(--gold-deep); color:var(--navy); transform:translateY(-2px);}
+  .scale-btn.active{
+    background:radial-gradient(circle at 32% 28%, var(--gold-soft), var(--gold-deep) 75%);
+    border-color:var(--gold-deep);
+    color:#fff;
+    box-shadow:0 6px 16px rgba(201,151,63,0.5);
+    transform:scale(1.08);
+  }
+  .scale-caption{
+    display:flex; justify-content:space-between;
+    margin-top:10px;
+    font-size:11.5px; color:var(--ink-soft);
+  }
+
+  /* ---------- radio (large tap cards) ---------- */
+  .radio-group{display:flex; flex-direction:column; gap:14px;}
+  .radio-group + .radio-group{margin-top:14px;}
+  .radio-group label{
+    display:flex; align-items:center; gap:16px;
+    padding:22px 22px;
+    min-height:64px;
+    border:1.5px solid var(--line);
+    background:var(--cream);
+    cursor:pointer;
+    font-size:16px;
+    line-height:1.5;
+    transition:border-color .2s, background .2s, transform .15s;
+  }
+  .radio-group label:hover{border-color:var(--gold-deep); background:#fdf7e9;}
+  .radio-group label:active{transform:scale(0.99);}
+  .radio-group input[type="radio"]{
+    appearance:none; width:26px; height:26px; border-radius:50%;
+    border:2px solid var(--gold-deep); position:relative; flex:none;
+    transition:border-color .2s;
+  }
+  .radio-group input[type="radio"]:checked{border-color:var(--navy); border-width:2.5px;}
+  .radio-group input[type="radio"]:checked::after{
+    content:''; position:absolute; inset:4px; border-radius:50%;
+    background:var(--navy);
+  }
+  .radio-group label:has(input:checked){
+    border-color:var(--navy); background:#fdf7e9;
+  }
+
+  /* ---------- textarea ---------- */
+  textarea{
+    width:100%; min-height:160px;
+    padding:14px 4px;
+    border:none; border-bottom:1.5px solid var(--line);
+    background:transparent;
+    font-family:var(--sans); font-size:15px; color:var(--ink);
+    resize:vertical;
+    transition:border-color .3s;
+  }
+  textarea::placeholder{color:#bcb193;}
+  textarea:focus{outline:none; border-bottom-color:var(--navy);}
+
+  /* ---------- thank you slide ---------- */
+  .thankyou{ position:relative; text-align:center; padding:56px 30px; background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow);}
+  .thankyou .flourish{
+    width:44px; height:44px; border-radius:50%; margin:0 auto 20px;
+    background:var(--navy); border:1.5px solid var(--gold); color:var(--gold);
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .thankyou h2{font-family:var(--serif-kr); font-size:22px; margin:0 0 14px; color:var(--ink);}
+  .thankyou p{font-size:14px; color:var(--ink-soft); line-height:1.8; max-width:380px; margin:0 auto;}
+
+  /* ---------- bottom nav ---------- */
+  .bottom-nav{
+    position:fixed; left:0; right:0; bottom:0; height:var(--nav-h);
+    background:var(--navy);
+    border-top:1px solid var(--gold-deep);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 22px;
+    z-index:90;
+  }
+  .bottom-nav.hidden{display:none;}
+  .bottom-nav.intro-nav{justify-content:center;}
+  .bottom-nav.intro-nav #prevBtn, .bottom-nav.intro-nav .step-indicator{display:none;}
+  .nav-btn{
+    font-family:var(--sans);
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  #prevBtn{
+    background:none; color:#b7c3ca;
+    font-size:14.5px; padding:12px 6px;
+  }
+  #prevBtn:disabled{opacity:0; pointer-events:none;}
+  #prevBtn::before{content:'← ';}
+  #nextBtn{
+    font-family:var(--serif-kr); font-weight:700;
+    background:linear-gradient(135deg, var(--gold-soft), var(--gold-deep));
+    color:var(--navy-deep);
+    padding:15px 34px;
+    border-radius:2px;
+    font-size:15.5px;
+    letter-spacing:.03em;
+    box-shadow:0 12px 26px -12px rgba(0,0,0,0.4);
+  }
+  #nextBtn:hover{transform:translateY(-2px); box-shadow:0 16px 32px -12px rgba(0,0,0,0.5);}
+  #nextBtn:active{transform:translateY(0);}
+  .step-indicator{
+    font-family:var(--serif-en); font-weight:600;
+    font-size:13px; color:var(--gold-soft);
+    letter-spacing:.02em;
+  }
+
+  #loading{
+    position:fixed; left:0; right:0; bottom:calc(var(--nav-h) + 10px);
+    text-align:center;
+    font-size:13.5px; color:var(--gold-deep); font-family:var(--serif-en); font-weight:600;
+    display:none;
+  }
+
+  @media (max-width:600px){
+    .stage{padding:10px 16px 16px;}
+    .movement{padding:28px 20px;}
+    .intro-panel{padding:36px 22px 28px;}
+    h1.title{font-size:24px;}
+    .intro-meta{max-width:100%;}
+    #nextBtn{padding:14px 26px; font-size:14.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="ribbonTrack"><div id="ribbonFill"></div></div>
+
+<div class="stage">
+  <form id="surveyForm">
+    <div id="slidesWrap">
+
+      <!-- Slide 0 : Intro -->
+      <section class="slide active intro" data-slide="0">
+        <div class="intro-panel">
+          <span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span>
+          <div class="lockup-text">
+            <div class="lockup-year">2026</div>
+            <div class="lockup-name">K예술영재 프로젝트</div>
+            <div class="lockup-sub-row"><span class="lockup-line"></span><span class="lockup-sub">음악 분야 워크숍</span><span class="lockup-line"></span></div>
+          </div>
+          <h1 class="title">만족도 설문조사</h1>
+          <div class="rule"></div>
+          <p class="intro-body">이 설문은 2026 K예술영재 프로젝트<br>음악 워크숍에 함께해주신<br>학생과 학부모님의 생생한 이야기를<br>듣기 위해 마련되었습니다.<br><br>여러분의 솔직한 의견은<br><b>다음 워크숍</b>을 더 좋은 무대로<br>만드는 데 소중히 쓰입니다.</p>
+          <div class="intro-meta">
+            <div class="meta-item"><span class="meta-num">9</span><span class="meta-label">개 문항</span></div>
+            <div class="meta-item"><span class="meta-num">3</span><span class="meta-label">분 소요</span></div>
+            <div class="meta-item"><span class="meta-num">익명</span><span class="meta-label">응답 보장</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 1 : Movement 01 - 참여 파트 선택 -->
+      <section class="slide" data-slide="1">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">01</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">참여하신 파트를 선택해주세요.</p>
+          <div class="radio-group">
+            <label><input type="radio" name="q1_part" value="피아노" required> 피아노</label>
+            <label><input type="radio" name="q1_part" value="바이올린"> 바이올린</label>
+            <label><input type="radio" name="q1_part" value="첼로"> 첼로</label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 2 : Movement 02 - 프로그램 전반 만족도 -->
+      <section class="slide" data-slide="2">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">02</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">프로그램 전반에 대한 만족도를 평가해주세요.</p>
+          <p class="m-desc">각 항목을 1점(매우 불만족)부터 5점(매우 만족)까지 선택해주세요.</p>
+
+          <div class="scale-block">
+            <div class="scale-item">
+              <p class="item-label">2-1. 프로그램 내용 및 구성이 유익했습니까?</p>
+              <div class="scale-dots" data-q="q2_content">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q2_content" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">2-2. 가장 만족스러웠던 프로그램은 무엇입니까?</p>
+              <div class="radio-group">
+                <label><input type="radio" name="q2_program" value="특강" required> 특강</label>
+                <label><input type="radio" name="q2_program" value="마스터 클래스"> 마스터 클래스</label>
+                <label><input type="radio" name="q2_program" value="연주회"> 연주회</label>
+                <label><input type="radio" name="q2_program" value="개인레슨"> 개인레슨</label>
+              </div>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">2-3. 강사진의 지도 방식은 만족스러웠습니까?</p>
+              <div class="scale-dots" data-q="q2_instructor">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q2_instructor" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">2-4. 교육 일정은 적절했습니까?</p>
+              <div class="scale-dots" data-q="q2_duration">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q2_duration" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">2-5. 전반적인 운영 및 환경(시설/진행)은 어떠했습니까?</p>
+              <div class="scale-dots" data-q="q2_facility">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q2_facility" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3 : Movement 03 - 생활멘토·안전·편의시설 -->
+      <section class="slide" data-slide="3">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">03</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">생활멘토 돌봄과 안전·편의 환경은 어떠했습니까?</p>
+          <p class="m-desc">각 항목을 1점(매우 불만족)부터 5점(매우 만족)까지 선택해주세요.</p>
+
+          <div class="scale-block">
+            <div class="scale-item">
+              <p class="item-label">3-1. 생활멘토(담당 선생님)의 돌봄과 소통은 어떠셨습니까?</p>
+              <div class="scale-dots" data-q="q3_mentor_care">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q3_mentor_care" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">3-2. 현장 안전관리 및 비상 상황 대응 체계는 믿음직했습니까?</p>
+              <div class="scale-dots" data-q="q3_safety">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q3_safety" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">3-3. 식사 및 휴게 공간 이용은 만족스러웠습니까?</p>
+              <div class="scale-dots" data-q="q3_meal_rest">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q3_meal_rest" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4 : Movement 04 - 사전 안내 및 소통 -->
+      <section class="slide" data-slide="4">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">04</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">참가 전 안내와 학부모 소통은 원활했습니까?</p>
+          <p class="m-desc">각 항목을 1점(매우 불만족)부터 5점(매우 만족)까지 선택해주세요.</p>
+
+          <div class="scale-block">
+            <div class="scale-item">
+              <p class="item-label">4-1. 워크숍 신청 및 사전 안내(일정·장소·준비물 등)는 충분했습니까?</p>
+              <div class="scale-dots" data-q="q4_precomm">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q4_precomm" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">4-2. 워크숍 기간 중 학부모 대상 소통(연락, 공지사항 전달)은 원활했습니까?</p>
+              <div class="scale-dots" data-q="q4_parentcomm">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>매우 불만족</span><span>매우 만족</span></div>
+              <input type="hidden" name="q4_parentcomm" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5 : Movement 05 - 가장 좋았던 점 -->
+      <section class="slide" data-slide="5">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">05</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">이번 워크숍에서 가장 좋았던 점은 무엇입니까?</p>
+          <textarea name="q5_best_point" placeholder="자유롭게 작성해주세요." required></textarea>
+        </div>
+      </section>
+
+      <!-- Slide 6 : Movement 06 - 겨울캠프 희망 분야 -->
+      <section class="slide" data-slide="6">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">06</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">추후 겨울캠프에서 배우고 싶은 음악 분야나 세부 과목은 무엇입니까?</p>
+          <p class="m-desc">예: 실내악, 오케스트라, 즉흥연주, 작곡, 음악이론 등</p>
+          <textarea name="q6_future_subject" placeholder="자유롭게 작성해주세요."></textarea>
+        </div>
+      </section>
+
+      <!-- Slide 7 : Movement 07 - 아티스트 추천 -->
+      <section class="slide" data-slide="7">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">07</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">향후 겨울캠프에서 꼭 만나보고 싶은 국내외 아티스트가 있다면 추천해주세요.</p>
+          <p class="m-desc">예: 오케스트라 수석연주자, 지휘자, 작곡가 등</p>
+          <textarea name="q7_artist" placeholder="자유롭게 작성해주세요."></textarea>
+        </div>
+      </section>
+
+      <!-- Slide 8 : Movement 08 - 재참여 및 추천 의향 -->
+      <section class="slide" data-slide="8">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">08</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">다시 함께하고 싶으신가요?</p>
+          <p class="m-desc">각 항목을 1점(전혀 아니다)부터 5점(매우 그렇다)까지 선택해주세요.</p>
+
+          <div class="scale-block">
+            <div class="scale-item">
+              <p class="item-label">8-1. 다음에 유사한 워크숍이 열린다면 다시 참여하고 싶으십니까?</p>
+              <div class="scale-dots" data-q="q8_reapply">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>전혀 아니다</span><span>매우 그렇다</span></div>
+              <input type="hidden" name="q8_reapply" required>
+            </div>
+
+            <div class="scale-item">
+              <p class="item-label">8-2. 주변 지인에게 이 워크숍을 추천하고 싶으십니까?</p>
+              <div class="scale-dots" data-q="q8_recommend">
+                <button type="button" class="scale-btn" value="1">1</button>
+                <button type="button" class="scale-btn" value="2">2</button>
+                <button type="button" class="scale-btn" value="3">3</button>
+                <button type="button" class="scale-btn" value="4">4</button>
+                <button type="button" class="scale-btn" value="5">5</button>
+              </div>
+              <div class="scale-caption"><span>전혀 아니다</span><span>매우 그렇다</span></div>
+              <input type="hidden" name="q8_recommend" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 9 : Movement 09 - 기타 건의사항 (마지막) -->
+      <section class="slide" data-slide="9">
+        <div class="movement">
+          <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+          <div class="m-head"><span class="m-num">09</span><span class="m-tag">Movement</span><span class="m-rule"></span></div>
+          <p class="m-title">기타 본 프로그램에 대한 개선점이나 건의사항이 있다면 자유롭게 작성해주세요.</p>
+          <textarea name="q9_feedback" placeholder="개선점이나 건의사항을 자유롭게 작성해주세요."></textarea>
+        </div>
+      </section>
+
+      <!-- Slide 10 : Thank you -->
+      <section class="slide thankyou" data-slide="10">
+        <span class="corner corner-tl small"></span><span class="corner corner-tr small"></span><span class="corner corner-bl small"></span><span class="corner corner-br small"></span>
+        <div class="flourish">❦</div>
+        <h2>감사합니다</h2>
+        <p>설문이 성공적으로 제출되었습니다.<br>여러분의 이야기가 다음 워크숍의 무대를 더 아름답게 만들어줄 거예요.</p>
+      </section>
+
+    </div>
+  </form>
+</div>
+
+<div id="loading">제출 중입니다. 잠시만 기다려주세요...</div>
+
+<div class="bottom-nav intro-nav" id="bottomNav">
+  <button type="button" id="prevBtn">이전</button>
+  <div class="step-indicator" id="stepIndicator"></div>
+  <button type="button" id="nextBtn">설문 시작하기</button>
+</div>
+
+<script>
+  const form = document.getElementById('surveyForm');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const totalContentSlides = slides.length - 2; // excludes intro(0) and thankyou(last)
+  let current = 0;
+
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const stepIndicator = document.getElementById('stepIndicator');
+  const bottomNav = document.getElementById('bottomNav');
+  const ribbonFill = document.getElementById('ribbonFill');
+
+  // scale button interactions
+  document.querySelectorAll('.scale-dots[data-q]').forEach(group=>{
+    const buttons = group.querySelectorAll('.scale-btn');
+    const hiddenInput = group.closest('.scale-item').querySelector('input[type="hidden"]');
+    buttons.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        buttons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        hiddenInput.value = btn.value;
+      });
+    });
+  });
+
+  function showSlide(index){
+    slides.forEach((s,i)=>{
+      s.classList.toggle('active', i===index);
+    });
+    current = index;
+
+    const lastContentIndex = slides.length - 2;
+    let pct;
+    if(index === 0) pct = 0;
+    else if(index >= lastContentIndex + 1) pct = 100;
+    else pct = Math.round((index / lastContentIndex) * 100);
+    ribbonFill.style.width = pct + '%';
+
+    if(index === 0){
+      prevBtn.disabled = true;
+      nextBtn.textContent = '설문 시작하기';
+      bottomNav.classList.remove('hidden');
+      bottomNav.classList.add('intro-nav');
+    } else if(index === slides.length - 1){
+      bottomNav.classList.remove('intro-nav');
+      bottomNav.classList.add('hidden');
+    } else {
+      prevBtn.disabled = false;
+      stepIndicator.textContent = index + ' / ' + totalContentSlides;
+      nextBtn.textContent = (index === lastContentIndex) ? '제출하기' : '다음';
+      bottomNav.classList.remove('hidden');
+      bottomNav.classList.remove('intro-nav');
+    }
+
+    window.scrollTo({top:0, behavior:'auto'});
+  }
+
+  function validateSlide(index){
+    const slide = slides[index];
+    const requiredHidden = slide.querySelectorAll('input[type="hidden"][required]');
+    for(const input of requiredHidden){
+      if(!input.value){
+        input.closest('.scale-item').scrollIntoView({behavior:'smooth', block:'center'});
+        return '아직 선택하지 않은 만족도 항목이 있습니다.';
+      }
+    }
+    const radioGroups = new Set();
+    slide.querySelectorAll('input[type="radio"][required]').forEach(r=>radioGroups.add(r.name));
+    for(const name of radioGroups){
+      if(!slide.querySelector('input[name="'+name+'"]:checked')){
+        return '항목을 선택해주세요.';
+      }
+    }
+    const requiredCheckboxGroups = slide.querySelectorAll('[data-required-group]');
+    for(const group of requiredCheckboxGroups){
+      const name = group.getAttribute('data-required-group');
+      if(!slide.querySelector('input[name="'+name+'"]:checked')){
+        return '항목을 하나 이상 선택해주세요.';
+      }
+    }
+    const requiredTextareas = slide.querySelectorAll('textarea[required]');
+    for(const t of requiredTextareas){
+      if(!t.value.trim()){
+        t.focus();
+        return '내용을 작성해주세요.';
+      }
+    }
+    return null;
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    const lastContentIndex = slides.length - 2;
+
+    if(current > 0 && current <= lastContentIndex){
+      const err = validateSlide(current);
+      if(err){ alert(err); return; }
+    }
+
+    if(current === lastContentIndex){
+      submitSurvey();
+      return;
+    }
+
+    if(current < lastContentIndex){
+      showSlide(current + 1);
+    }
+  });
+
+  prevBtn.addEventListener('click', ()=>{
+    if(current > 0) showSlide(current - 1);
+  });
+
+  function submitSurvey(){
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbx2Bvk9TikEn_tBScou_IM6WZCS7UejWZ0KprbwLRQiFrhj13V8Tdkl974MIeSKP7R3/exec';
+    const loading = document.getElementById('loading');
+    bottomNav.classList.add('hidden');
+    loading.style.display = 'block';
+
+    fetch(scriptURL, { method:'POST', body: new FormData(form) })
+      .then(()=>{
+        loading.style.display = 'none';
+        showSlide(slides.length - 1);
+      })
+      .catch(error=>{
+        console.error('Error!', error.message);
+        loading.style.display = 'none';
+        bottomNav.classList.remove('hidden');
+        alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      });
+  }
+
+  showSlide(0);
+</script>
+</body>
+</html>
