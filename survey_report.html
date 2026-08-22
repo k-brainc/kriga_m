@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K예술영재 프로젝트 | 설문 분석 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#2f4f62; --navy-deep:#1f3746;
+    --gold:#eec97a; --gold-soft:#f5dda3; --gold-deep:#c9973f;
+    --cream:#faf7ef; --card:#ffffff;
+    --ink:#211d1a; --ink-soft:#6b6459; --line:#e7ddc4;
+    --shadow: 0 18px 40px -20px rgba(31,55,70,0.28);
+    --serif-kr:'Noto Serif KR', serif;
+    --serif-en:'Cormorant Garamond', serif;
+    --sans:'PretendardVariable','Pretendard', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); background:var(--cream);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  header.topbar{
+    background:linear-gradient(160deg, var(--navy), var(--navy-deep));
+    color:#fff; padding:22px 28px; position:sticky; top:0; z-index:50;
+    box-shadow:0 8px 24px -12px rgba(0,0,0,0.4);
+  }
+  .topbar-inner{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .eyebrow{ font-weight:700; letter-spacing:.28em; text-transform:uppercase; font-size:11px; color:var(--gold); }
+  .brand h1{ font-family:var(--serif-kr); font-weight:700; font-size:21px; margin:0; color:#fff; }
+  .status{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .live-badge{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--gold-soft); font-weight:600; }
+  .live-dot{ width:8px; height:8px; border-radius:50%; background:#6fd18a; animation:pulse 1.8s infinite; }
+  @keyframes pulse{ 0%{box-shadow:0 0 0 0 rgba(111,209,138,.6);} 70%{box-shadow:0 0 0 8px rgba(111,209,138,0);} 100%{box-shadow:0 0 0 0 rgba(111,209,138,0);} }
+  .updated-text{font-size:12px; color:#b7c3ca;}
+  .refresh-btn{
+    font-weight:600; font-size:13px; background:rgba(238,201,122,.14); color:var(--gold-soft);
+    border:1px solid rgba(238,201,122,.4); border-radius:20px; padding:8px 16px; cursor:pointer;
+    display:flex; align-items:center; gap:6px; transition:background .2s, transform .2s;
+    text-decoration:none; box-sizing:border-box;
+  }
+  .refresh-btn:hover{background:rgba(238,201,122,.24); transform:translateY(-1px);}
+  .refresh-btn svg{width:14px; height:14px;}
+  .refresh-btn.spinning svg{animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  main{max-width:1100px; margin:0 auto; padding:28px;}
+
+  .setup-panel{
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--gold-deep);
+    padding:28px 30px; box-shadow:var(--shadow); margin-bottom:24px;
+  }
+  .setup-panel h2{font-family:var(--serif-kr); font-size:18px; margin:0 0 10px;}
+  .setup-panel p{font-size:13.5px; color:var(--ink-soft); line-height:1.8; margin:0 0 10px;}
+  .setup-panel ol{font-size:13.5px; line-height:2; padding-left:20px; margin:0 0 12px;}
+  .setup-panel code{background:var(--cream); border:1px solid var(--line); border-radius:4px; padding:1px 7px; font-size:12.5px; color:var(--navy-deep);}
+  .setup-panel .err{color:#b3564a; font-weight:600; font-size:13px;}
+
+  /* overview */
+  .overview-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:34px;}
+  .stat-card{
+    background:var(--card); border:1px solid var(--line); padding:18px 20px; box-shadow:var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .stat-card::before{content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--gold);}
+  .stat-label{font-size:11.5px; color:var(--ink-soft); margin-bottom:6px; font-weight:600;}
+  .stat-value{font-family:var(--serif-en); font-size:28px; font-weight:700; color:var(--navy); line-height:1;}
+  .stat-value small{font-family:var(--sans); font-size:13px; color:var(--ink-soft); font-weight:500; margin-left:4px;}
+
+  /* movement section = the core organizing unit, one per survey Movement */
+  .m-section{ margin-bottom:30px; }
+  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:4px; }
+  .m-badge{
+    width:34px; height:34px; border-radius:50%; flex:none;
+    background:var(--navy); border:1.5px solid var(--gold); color:var(--gold);
+    font-family:var(--serif-en); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .m-eyebrow{ font-weight:700; letter-spacing:.14em; font-size:10.5px; color:var(--navy); text-transform:uppercase; }
+  .m-question{ font-family:var(--serif-kr); font-weight:700; font-size:16.5px; margin:6px 0 16px 46px; color:var(--ink); line-height:1.5; }
+
+  .m-card{
+    background:var(--card); border:1px solid var(--line); padding:22px 24px; box-shadow:var(--shadow);
+    margin-left:0;
+  }
+  .m-card canvas{max-height:230px;}
+  .sub-question{font-size:12.5px; color:var(--ink-soft); margin:0 0 2px;}
+
+  /* insight / interpretation panels */
+  .insight-box{
+    margin-top:16px; padding-top:16px; border-top:1px dashed var(--line);
+    display:flex; gap:12px; align-items:flex-start;
+  }
+  .insight-icon{
+    flex:none; width:26px; height:26px; border-radius:50%;
+    background:var(--cream); border:1px solid var(--line); color:var(--navy);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    font-family:var(--serif-en);
+  }
+  .insight-text{font-size:13px; line-height:1.75; color:var(--ink);}
+  .insight-text b{color:var(--navy); font-weight:700;}
+  .tone-pill{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 9px; border-radius:10px;
+    margin-left:2px; vertical-align:1px;
+  }
+  .tone-excellent{background:#e4f0e6; color:#3d7a4a;}
+  .tone-good{background:#eef4e0; color:#6b8f3a;}
+  .tone-fair{background:#fdf3dc; color:#a97c1f;}
+  .tone-ok{background:#fbe8d9; color:#b5651d;}
+  .tone-poor{background:#fbe3e0; color:#b3564a;}
+
+  /* executive summary */
+  .exec-summary{
+    background:linear-gradient(160deg, var(--navy), var(--navy-deep));
+    color:#fff; padding:26px 28px; margin-bottom:30px; box-shadow:var(--shadow);
+    position:relative;
+  }
+  .exec-summary .m-eyebrow{color:var(--gold); font-size:11px;}
+  .exec-summary h2{font-family:var(--serif-kr); font-size:17px; margin:8px 0 14px; color:#fff;}
+  .exec-summary p{font-size:13.5px; line-height:1.85; color:#dbe3e7; margin:0 0 14px;}
+  .exec-summary ul{margin:0; padding-left:20px; font-size:13px; line-height:1.9; color:#dbe3e7;}
+  .exec-summary ul li{margin-bottom:6px;}
+  .exec-summary ul li b{color:var(--gold-soft);}
+  .exec-summary .empty-note{font-size:13px; color:#b7c3ca; font-style:italic;}
+
+  /* text-response analysis */
+  .text-analysis{
+    background:var(--cream); border:1px solid var(--line); padding:16px 20px; margin-bottom:14px;
+  }
+  .text-analysis .rate{font-size:12.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .text-analysis .rate b{color:var(--navy); font-weight:700;}
+  .keyword-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .keyword-chip{
+    font-size:12px; font-weight:600; padding:5px 12px; border-radius:14px;
+    background:#fff; border:1px solid var(--gold-deep); color:var(--navy);
+  }
+  .keyword-chip small{color:var(--ink-soft); font-weight:500; margin-left:3px;}
+
+  .no-data{padding:34px; text-align:center; color:var(--ink-soft); font-size:13px;}
+
+  /* text-response movements (6,7,8,10) shown as tabs */
+  .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .tab-btn{
+    font-size:12.5px; font-weight:600; padding:8px 16px; border:1px solid var(--line);
+    background:var(--cream); color:var(--ink-soft); border-radius:20px; cursor:pointer; transition:all .2s;
+  }
+  .tab-btn.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .response-list{ background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); max-height:380px; overflow-y:auto; }
+  .response-item{ padding:15px 22px; border-bottom:1px solid var(--line); font-size:13.5px; line-height:1.7; }
+  .response-item:last-child{border-bottom:none;}
+
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:760px){ .two-col{grid-template-columns:1fr;} }
+
+  footer.note{ text-align:center; padding:30px 20px; font-size:12px; color:var(--ink-soft); font-family:var(--serif-en); font-style:italic; }
+
+  @media (max-width:640px){
+    header.topbar{padding:16px 18px;} main{padding:16px;}
+    .m-question{margin-left:0;}
+    .stat-value{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="eyebrow">2026 K예술영재 프로젝트</span>
+      <h1>음악 워크숍 설문 분석 리포트</h1>
+    </div>
+    <div class="status">
+      <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+      <span class="updated-text" id="updatedText">불러오는 중…</span>
+      <a class="refresh-btn" id="sourceDataBtn" href="#" target="_blank" rel="noopener" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+        원본 데이터 보기
+      </a>
+      <button class="refresh-btn" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        새로고침
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="setupNotice" class="setup-panel" style="display:none;"></div>
+
+  <div id="dashboard" style="display:none;">
+
+    <div class="overview-row" id="overviewRow"></div>
+
+    <!-- 종합 진단 (executive summary, auto-generated) -->
+    <section class="m-section">
+      <div class="exec-summary" id="execSummary"></div>
+    </section>
+
+    <!-- Movement 1 : 참여 파트 -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">01</span><span class="m-eyebrow">Movement 1</span></div>
+      <p class="m-question">참여하신 파트를 선택해주세요.</p>
+      <div class="m-card"><canvas id="chartM1"></canvas></div>
+    </section>
+
+    <!-- Movement 2 -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">02</span><span class="m-eyebrow">Movement 2</span></div>
+      <p class="m-question">프로그램 전반에 대한 만족도를 평가해주세요.</p>
+      <div class="m-card"><canvas id="chartM2"></canvas><div class="insight-box" id="insightM2"></div></div>
+      <p class="sub-question" style="margin-top:14px;">2-2. 가장 만족스러웠던 프로그램은 무엇입니까?</p>
+      <div class="m-card"><canvas id="chartM2b"></canvas></div>
+    </section>
+
+    <!-- Movement 3 -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">03</span><span class="m-eyebrow">Movement 3</span></div>
+      <p class="m-question">생활멘토 돌봄과 안전·편의 환경은 어떠했습니까?</p>
+      <div class="m-card"><canvas id="chartM3"></canvas><div class="insight-box" id="insightM3"></div></div>
+    </section>
+
+    <!-- Movement 4 -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">04</span><span class="m-eyebrow">Movement 4</span></div>
+      <p class="m-question">참가 전 안내와 학부모 소통은 원활했습니까?</p>
+      <div class="m-card"><canvas id="chartM4"></canvas><div class="insight-box" id="insightM4"></div></div>
+    </section>
+
+    <!-- Movement 8 : reapply / recommend -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">08</span><span class="m-eyebrow">Movement 8</span></div>
+      <p class="m-question">다시 함께하고 싶으신가요?</p>
+      <div class="m-card"><canvas id="chartM8"></canvas><div class="insight-box" id="insightM8"></div></div>
+    </section>
+
+    <!-- Movements 5 / 6 / 7 / 9 : text responses -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-badge">5·6</span><span class="m-eyebrow">주관식 응답</span><span class="m-eyebrow" style="margin-left:auto; color:var(--ink-soft);">Movement 5 · 6 · 7 · 9</span></div>
+      <div class="tabs" id="responseTabs"></div>
+      <p class="sub-question" id="responseQuestionText"></p>
+      <div class="text-analysis" id="textAnalysis"></div>
+      <div class="response-list" id="responseList"></div>
+    </section>
+
+    <!-- 종합 시사점 -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-eyebrow" style="color:var(--ink-soft);">종합</span></div>
+      <p class="m-question" style="margin-left:0;">시사점 및 제언</p>
+      <div class="m-card" id="implicationsCard"></div>
+    </section>
+
+    <!-- Trend (bonus, not tied to a specific question) -->
+    <section class="m-section">
+      <div class="m-head"><span class="m-eyebrow" style="color:var(--ink-soft);">참고</span></div>
+      <p class="m-question" style="margin-left:0;">시간별 누적 응답 추이</p>
+      <div class="m-card"><canvas id="chartTrend"></canvas></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="note">K예술영재 · 실시간으로 연결된 설문 응답 데이터입니다</footer>
+
+<script>
+/* ============================================================
+   설정 (CONFIG)
+   ============================================================ */
+const CONFIG = {
+  // 음악 분야 설문 응답이 쌓일 구글 시트 ID를 넣어주세요.
+  // (무용·미술 워크숍과는 별도의 시트를 사용해야 합니다.)
+  SPREADSHEET_ID: '1gW0RiezjdfgbDh3k78O8bl1MSUjvcawRqf-ysMBE8HI',
+
+  // 응답이 쌓이는 시트(탭) 이름
+  SHEET_NAME: '시트1',
+
+  REFRESH_INTERVAL_SEC: 30,
+
+  // 내부 필드 ↔ 실제 시트 헤더(1행) 매핑. music_survey.html의 문항 번호(1,
+  // 2-1~2-4, 3-1~3-3, 4-1~4-2, 5, 6, 7, 8-1~8-2, 9)를 시트 헤더로 그대로 쓰는
+  // 것을 기준으로 매핑했습니다. 실제 헤더 텍스트가 다르면 오른쪽 값만 바꿔주세요.
+  FIELD_MAP: {
+    timestamp:     '타임스탬프',
+    q1_part:       '1',
+    q2_content:    '2-1',
+    q2_program:    '2-2',
+    q2_instructor: '2-3',
+    q2_duration:   '2-4',
+    q2_facility:   '2-5',
+    q3_mentor:     '3-1',
+    q3_safety:     '3-2',
+    q3_meal:       '3-3',
+    q4_precomm:    '4-1',
+    q4_parentcomm: '4-2',
+    q5_best_point: '5',
+    q6_future:     '6',
+    q7_artist:     '7',
+    q8_reapply:    '8-1',
+    q8_recommend:  '8-2',
+    q9_feedback:   '9'
+  }
+};
+/* ============================================================ */
+
+// Every entry here corresponds 1:1 to an actual survey question (music_survey.html).
+// field: internal key, q: exact question text as shown in the survey, short: chart axis label
+const M2_ITEMS = [
+  { field:'q2_content',    q:'2-1. 프로그램 내용 및 구성이 유익했습니까?',              short:'내용·구성' },
+  { field:'q2_instructor', q:'2-3. 강사진의 지도 방식은 만족스러웠습니까?',              short:'강사 지도' },
+  { field:'q2_duration',   q:'2-4. 교육 일정은 적절했습니까?',                        short:'교육 일정' },
+  { field:'q2_facility',   q:'2-5. 전반적인 운영 및 환경(시설/진행)은 어떠했습니까?',      short:'운영·환경' }
+];
+const M3_ITEMS = [
+  { field:'q3_mentor', q:'3-1. 생활멘토(담당 선생님)의 돌봄과 소통은 어떠셨습니까?',        short:'생활멘토 돌봄' },
+  { field:'q3_safety', q:'3-2. 현장 안전관리 및 비상 상황 대응 체계는 믿음직했습니까?',       short:'안전관리' },
+  { field:'q3_meal',   q:'3-3. 식사 및 휴게 공간 이용은 만족스러웠습니까?',               short:'식사·휴게공간' }
+];
+const M4_ITEMS = [
+  { field:'q4_precomm',    q:'4-1. 워크숍 신청 및 사전 안내(일정·장소·준비물 등)는 충분했습니까?', short:'사전 안내' },
+  { field:'q4_parentcomm', q:'4-2. 워크숍 기간 중 학부모 대상 소통(연락, 공지사항 전달)은 원활했습니까?', short:'학부모 소통' }
+];
+const M8_ITEMS = [
+  { field:'q8_reapply',   q:'8-1. 다음에 유사한 워크숍이 열린다면 다시 참여하고 싶으십니까?', short:'재참여 의향' },
+  { field:'q8_recommend', q:'8-2. 주변 지인에게 이 워크숍을 추천하고 싶으십니까?',           short:'추천 의향' }
+];
+
+// Movements 5, 6, 7, 9 — text responses, exact question text preserved
+const TEXT_MOVEMENTS = [
+  { key:'q5_best_point', num:'05', label:'Movement 5', question:'이번 워크숍에서 가장 좋았던 점은 무엇입니까?' },
+  { key:'q6_future',     num:'06', label:'Movement 6', question:'추후 겨울캠프에서 배우고 싶은 음악 분야나 세부 과목은 무엇입니까?' },
+  { key:'q7_artist',     num:'07', label:'Movement 7', question:'향후 겨울캠프에서 꼭 만나보고 싶은 국내외 아티스트가 있다면 추천해주세요.' },
+  { key:'q9_feedback',   num:'09', label:'Movement 9', question:'기타 본 프로그램에 대한 개선점이나 건의사항이 있다면 자유롭게 작성해주세요.' }
+];
+
+let charts = {};
+let allRows = [];
+let currentTextMovement = TEXT_MOVEMENTS[0].key;
+
+const NAVY = '#2f4f62', GOLD = '#eec97a', GOLD_DEEP = '#c9973f', LINE = '#e7ddc4', INK_SOFT = '#6b6459';
+
+function gvizUrl(){
+  return `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}&_=${Date.now()}`;
+}
+
+async function fetchSheet(){
+  const res = await fetch(gvizUrl());
+  if(!res.ok) throw new Error('시트 응답 오류 (' + res.status + ')');
+  const text = await res.text();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if(start === -1 || end === -1) throw new Error('시트 데이터를 해석할 수 없습니다. 시트 이름 또는 공유 설정을 확인해주세요.');
+  const json = JSON.parse(text.substring(start, end + 1));
+  const cols = json.table.cols.map((c, i) => (c.label && c.label.trim()) || c.id || ('col' + i));
+  const rows = json.table.rows.map(r => (r.c || []).map(cell => {
+    if(!cell) return '';
+    if(cell.f !== undefined && cell.f !== null) return cell.f;
+    return cell.v ?? '';
+  }));
+  return rows.map(r => {
+    const obj = {};
+    cols.forEach((c, i) => { obj[c] = r[i]; });
+    return obj;
+  });
+}
+
+function mapRow(raw){
+  const out = {};
+  Object.entries(CONFIG.FIELD_MAP).forEach(([key, header]) => {
+    out[key] = raw[header] !== undefined ? raw[header] : '';
+  });
+  return out;
+}
+
+function toNum(v){ const n = parseFloat(v); return isNaN(n) ? null : n; }
+
+function avg(rows, field){
+  const nums = rows.map(r => toNum(r[field])).filter(n => n !== null);
+  if(!nums.length) return null;
+  return nums.reduce((a,b)=>a+b,0) / nums.length;
+}
+
+/* ---------- insight / interpretation engine ---------- */
+function getBand(score){
+  if(score >= 4.5) return {label:'매우 우수', tone:'excellent'};
+  if(score >= 4.0) return {label:'우수', tone:'good'};
+  if(score >= 3.5) return {label:'양호', tone:'fair'};
+  if(score >= 3.0) return {label:'보통', tone:'ok'};
+  return {label:'개선 필요', tone:'poor'};
+}
+
+function tonePill(band){
+  return `<span class="tone-pill tone-${band.tone}">${band.label}</span>`;
+}
+
+// Computes per-item averages for a scale-question set, filtering out items with no data.
+function computeItemStats(items, rows){
+  return items
+    .map(it => ({ ...it, avgScore: avg(rows, it.field) }))
+    .filter(it => it.avgScore !== null);
+}
+
+function renderInsight(insightId, movementLabel, items, rows){
+  const el = document.getElementById(insightId);
+  if(!el) return;
+  const stats = computeItemStats(items, rows);
+  if(!stats.length){ el.innerHTML = ''; return; }
+
+  const overall = stats.reduce((s,i)=>s+i.avgScore,0) / stats.length;
+  const band = getBand(overall);
+  const sorted = [...stats].sort((a,b)=>b.avgScore - a.avgScore);
+  const best = sorted[0];
+  const worst = sorted[sorted.length-1];
+
+  let text = `<b>${movementLabel}</b> 평균은 <b>${overall.toFixed(2)}점</b>으로 ${tonePill(band)} 수준입니다.`;
+
+  if(stats.length > 1 && best.field !== worst.field){
+    text += ` 세부 항목 중 <b>'${best.short}'</b>이(가) 가장 높게 평가되었고(${best.avgScore.toFixed(2)}점), <b>'${worst.short}'</b>은(는) 상대적으로 낮은 평가를 받았습니다(${worst.avgScore.toFixed(2)}점).`;
+  }
+
+  if(worst.avgScore < 3.5){
+    text += ` <b>'${worst.short}'</b> 항목은 다음 워크숍 기획 시 우선적으로 보완을 검토해볼 만합니다.`;
+  } else if(band.tone === 'excellent' || band.tone === 'good'){
+    text += ` 전반적으로 만족도가 높아 현재 운영 방식을 유지하는 것을 권장합니다.`;
+  }
+
+  el.innerHTML = `<span class="insight-icon">A</span><span class="insight-text">${text}</span>`;
+}
+
+function countBy(rows, field){
+  const counts = {};
+  rows.forEach(r => {
+    const v = (r[field] || '').toString().trim();
+    if(!v) return;
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return counts;
+}
+
+function countMulti(rows, field, delimiter=','){
+  const counts = {};
+  rows.forEach(r => {
+    const v = (r[field] || '').toString();
+    if(!v.trim()) return;
+    v.split(delimiter).map(s=>s.trim()).filter(Boolean).forEach(item=>{
+      counts[item] = (counts[item] || 0) + 1;
+    });
+  });
+  return counts;
+}
+
+function parseSheetDate(v){
+  if(!v) return null;
+  if(v instanceof Date) return isNaN(v) ? null : v;
+  const str = v.toString().trim();
+  const kr = str.match(/^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s+(오전|오후)\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if(kr){
+    let [, y, mo, d, ampm, h, mi, se] = kr;
+    y=+y; mo=+mo; d=+d; h=+h; mi=+mi; se = se ? +se : 0;
+    if(ampm === '오후' && h < 12) h += 12;
+    if(ampm === '오전' && h === 12) h = 0;
+    const dt = new Date(y, mo-1, d, h, mi, se);
+    return isNaN(dt) ? null : dt;
+  }
+  const generic = new Date(str);
+  return isNaN(generic) ? null : generic;
+}
+
+function makeChart(canvasId, type, data, options){
+  const el = document.getElementById(canvasId);
+  if(!el) return null;
+  if(charts[canvasId]){ charts[canvasId].destroy(); }
+  charts[canvasId] = new Chart(el.getContext('2d'), {type, data, options});
+  return charts[canvasId];
+}
+
+function resetChartCard(canvasId, message){
+  const el = document.getElementById(canvasId);
+  if(!el) return;
+  if(charts[canvasId]){ charts[canvasId].destroy(); delete charts[canvasId]; }
+  el.style.display = 'none';
+  const parent = el.parentElement;
+  parent.querySelector('.no-data')?.remove();
+  const note = document.createElement('div');
+  note.className = 'no-data';
+  note.textContent = message;
+  el.insertAdjacentElement('afterend', note);
+}
+
+function restoreChartCanvas(canvasId){
+  const el = document.getElementById(canvasId);
+  if(!el) return;
+  el.style.display = '';
+  el.parentElement.querySelector('.no-data')?.remove();
+}
+
+/* ---------- overview ---------- */
+function renderOverview(rows){
+  const total = rows.length;
+
+  const allScaleFields = [...M2_ITEMS, ...M3_ITEMS, ...M4_ITEMS, ...M8_ITEMS].map(i=>i.field);
+  let sum = 0, cnt = 0;
+  allScaleFields.forEach(f => rows.forEach(r => { const n = toNum(r[f]); if(n!==null){ sum+=n; cnt++; } }));
+  const overallAvg = cnt ? sum/cnt : null;
+
+  const reapply = avg(rows, 'q8_reapply');
+  const recommend = avg(rows, 'q8_recommend');
+
+  const partCounts = countBy(rows, 'q1_part');
+  const partSummary = Object.keys(partCounts).length
+    ? Object.entries(partCounts).map(([k,v]) => `${k} ${v}`).join(' · ')
+    : '-';
+
+  const cards = [
+    {label:'총 응답 수', value:total, unit:'건'},
+    {label:'파트별 참여', value: partSummary, unit:''},
+    {label:'전체 만족도 평균', value: overallAvg ? overallAvg.toFixed(2) : '-', unit:'/ 5.0'},
+    {label:'재참여 의향', value: reapply ? reapply.toFixed(2) : '-', unit:'/ 5.0'},
+    {label:'추천 의향', value: recommend ? recommend.toFixed(2) : '-', unit:'/ 5.0'}
+  ];
+
+  document.getElementById('overviewRow').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value" style="${c.value.toString().length > 6 ? 'font-size:18px;' : ''}">${c.value}<small>${c.unit}</small></div>
+    </div>
+  `).join('');
+}
+
+/* ---------- Movement 1 : part split ---------- */
+function renderM1(rows){
+  const counts = countBy(rows, 'q1_part');
+  if(!Object.keys(counts).length){ resetChartCard('chartM1', '아직 응답 데이터가 없습니다.'); return; }
+  restoreChartCanvas('chartM1');
+  makeChart('chartM1', 'doughnut', {
+    labels: Object.keys(counts),
+    datasets:[{data:Object.values(counts), backgroundColor:[NAVY, GOLD, GOLD_DEEP], borderColor:'#fff', borderWidth:2}]
+  }, {
+    responsive:true,
+    plugins:{legend:{position:'bottom', labels:{color:'#211d1a', font:{size:12}}}}
+  });
+}
+
+/* ---------- executive summary (auto-generated) ---------- */
+const MOVEMENT_GROUPS = [
+  { key:'M2', label:'프로그램 전반 만족도', items:'M2_ITEMS' },
+  { key:'M3', label:'생활멘토·안전·편의',   items:'M3_ITEMS' },
+  { key:'M4', label:'사전 안내·학부모 소통', items:'M4_ITEMS' },
+  { key:'M8', label:'재참여·추천 의향',      items:'M8_ITEMS' }
+];
+
+function renderExecSummary(rows){
+  const el = document.getElementById('execSummary');
+  const total = rows.length;
+
+  if(total < 3){
+    el.innerHTML = `
+      <span class="m-eyebrow">종합 진단</span>
+      <h2>아직 진단하기에 응답이 충분하지 않습니다</h2>
+      <p class="empty-note">현재 응답 ${total}건입니다. 최소 3건 이상 쌓이면 자동으로 종합 진단이 표시됩니다. 표본이 적을 때의 진단은 왜곡될 수 있어 의도적으로 숨겨두었습니다.</p>
+    `;
+    return;
+  }
+
+  const itemsMap = { M2_ITEMS, M3_ITEMS, M4_ITEMS, M8_ITEMS };
+  const groupAverages = MOVEMENT_GROUPS.map(g => {
+    const stats = computeItemStats(itemsMap[g.items], rows);
+    if(!stats.length) return null;
+    const groupAvg = stats.reduce((s,i)=>s+i.avgScore,0) / stats.length;
+    return { ...g, avgScore: groupAvg };
+  }).filter(Boolean);
+
+  if(!groupAverages.length){
+    el.innerHTML = `<span class="m-eyebrow">종합 진단</span><h2>진단할 데이터가 아직 없습니다</h2>`;
+    return;
+  }
+
+  const overallAvg = groupAverages.reduce((s,g)=>s+g.avgScore,0) / groupAverages.length;
+  const overallBand = getBand(overallAvg);
+  const sorted = [...groupAverages].sort((a,b)=>b.avgScore - a.avgScore);
+  const best = sorted[0];
+  const worst = sorted[sorted.length-1];
+
+  const reapply = avg(rows, 'q8_reapply');
+  const recommend = avg(rows, 'q8_recommend');
+
+  let npsNote = '';
+  if(reapply !== null && recommend !== null){
+    if(reapply >= 4.0 && recommend >= 4.0){
+      npsNote = `재참여 의향(${reapply.toFixed(2)}점)과 추천 의향(${recommend.toFixed(2)}점)이 모두 높게 나타나, 이번 워크숍에 대한 만족이 향후 재참여·입소문으로 이어질 가능성이 큽니다.`;
+    } else if(reapply < 3.5 || recommend < 3.5){
+      npsNote = `재참여 의향(${reapply.toFixed(2)}점) 또는 추천 의향(${recommend.toFixed(2)}점)이 다소 낮게 나타나, 운영 전반에 대한 재점검이 필요해 보입니다.`;
+    } else {
+      npsNote = `재참여 의향(${reapply.toFixed(2)}점)과 추천 의향(${recommend.toFixed(2)}점)은 무난한 수준입니다.`;
+    }
+  }
+
+  el.innerHTML = `
+    <span class="m-eyebrow">종합 진단</span>
+    <h2>이번 워크숍은 전반적으로 ${tonePill(overallBand)} 수준으로 평가되었습니다</h2>
+    <p>총 <b>${total}건</b>의 응답을 기준으로, 전체 평균 만족도는 <b>${overallAvg.toFixed(2)}점</b>입니다.
+    영역별로는 <b>'${best.label}'</b>이(가) 가장 높게 평가되었고(${best.avgScore.toFixed(2)}점),
+    <b>'${worst.label}'</b>이(가) 상대적으로 가장 낮게 평가되었습니다(${worst.avgScore.toFixed(2)}점).
+    ${npsNote}</p>
+  `;
+}
+
+/* ---------- generic scale bar chart for a set of items ---------- */
+function renderScaleChart(canvasId, items, rows, movementLabel){
+  const insightId = canvasId.replace('chart', 'insight');
+  const hasAnyData = items.some(it => avg(rows, it.field) !== null);
+  if(!hasAnyData){
+    resetChartCard(canvasId, '아직 이 문항의 응답 데이터가 시트에 없습니다. (해당 컬럼이 시트에 추가되면 자동으로 표시됩니다)');
+    const insightEl = document.getElementById(insightId);
+    if(insightEl) insightEl.innerHTML = '';
+    return;
+  }
+  restoreChartCanvas(canvasId);
+  const values = items.map(it => { const a = avg(rows, it.field); return a ? +a.toFixed(2) : 0; });
+  makeChart(canvasId, 'bar', {
+    labels: items.map(it => it.short),
+    datasets:[{ data: values, backgroundColor:GOLD, borderColor:GOLD_DEEP, borderWidth:1, borderRadius:4, maxBarThickness:56 }]
+  }, {
+    responsive:true,
+    plugins:{
+      legend:{display:false},
+      tooltip:{ callbacks:{
+        title: (ctx) => items[ctx[0].dataIndex].q,
+        label: (ctx) => ` 평균 ${ctx.raw}점`
+      }}
+    },
+    scales:{
+      y:{min:0, max:5, ticks:{stepSize:1, color:INK_SOFT}, grid:{color:LINE}},
+      x:{ticks:{color:'#211d1a', font:{size:11}}, grid:{display:false}}
+    }
+  });
+  if(movementLabel) renderInsight(insightId, movementLabel, items, rows);
+}
+
+/* ---------- Movement 10 : most satisfying program type ---------- */
+function renderProgramChart(rows){
+  const counts = countBy(rows, 'q2_program');
+  if(!Object.keys(counts).length){ resetChartCard('chartM2b', '아직 응답 데이터가 없습니다.'); return; }
+  restoreChartCanvas('chartM2b');
+  const order = ['특강','마스터 클래스','연주회','개인레슨'];
+  const labels = order.filter(k => counts[k] !== undefined).concat(Object.keys(counts).filter(k => !order.includes(k)));
+  makeChart('chartM2b', 'bar', {
+    labels,
+    datasets:[{data: labels.map(k=>counts[k]), backgroundColor:GOLD, borderColor:GOLD_DEEP, borderWidth:1, borderRadius:4, maxBarThickness:56}]
+  }, {
+    responsive:true,
+    plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw}명 선택`}}},
+    scales:{
+      y:{beginAtZero:true, ticks:{stepSize:1, color:INK_SOFT}, grid:{color:LINE}},
+      x:{ticks:{color:'#211d1a', font:{size:11}}, grid:{display:false}}
+    }
+  });
+}
+
+/* ---------- trend (bonus) ---------- */
+function renderTrend(rows){
+  const withDates = rows.map(r=>parseSheetDate(r.timestamp)).filter(Boolean);
+  if(!withDates.length){ resetChartCard('chartTrend', '타임스탬프 데이터가 없어 추이를 표시할 수 없습니다.'); return; }
+  restoreChartCanvas('chartTrend');
+  withDates.sort((a,b)=>a-b);
+  const byDay = {};
+  withDates.forEach(d=>{
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    byDay[key] = (byDay[key]||0) + 1;
+  });
+  const days = Object.keys(byDay).sort();
+  let cum = 0;
+  const cumValues = days.map(d => { cum += byDay[d]; return cum; });
+  makeChart('chartTrend', 'line', {
+    labels: days,
+    datasets:[{ label:'누적 응답 수', data:cumValues, borderColor:GOLD_DEEP, backgroundColor:'rgba(238,201,122,0.18)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor:GOLD_DEEP }]
+  }, {
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{ y:{beginAtZero:true, ticks:{color:INK_SOFT}, grid:{color:LINE}}, x:{ticks:{color:INK_SOFT, font:{size:11}}, grid:{display:false}} }
+  });
+}
+
+/* ---------- text-response movements (6, 7, 8, 10) ---------- */
+function renderResponseTabs(){
+  document.getElementById('responseTabs').innerHTML = TEXT_MOVEMENTS.map(m => `
+    <button class="tab-btn ${m.key===currentTextMovement?'active':''}" data-key="${m.key}">${m.label}</button>
+  `).join('');
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentTextMovement = btn.getAttribute('data-key');
+      renderResponseTabs();
+      renderResponseList(allRows);
+      renderTextAnalysis(allRows);
+    });
+  });
+}
+
+function renderResponseList(rows){
+  const movement = TEXT_MOVEMENTS.find(m => m.key === currentTextMovement);
+  document.getElementById('responseQuestionText').textContent = movement ? movement.question : '';
+  const items = rows.slice().reverse().map(r => (r[currentTextMovement]||'').toString().trim()).filter(Boolean);
+  const el = document.getElementById('responseList');
+  if(!items.length){ el.innerHTML = '<div class="no-data">아직 응답이 없습니다.</div>'; return; }
+  el.innerHTML = items.map(text => `<div class="response-item">${escapeHtml(text)}</div>`).join('');
+}
+
+// Very simple frequency-based keyword surface: strips common trailing particles so
+// near-duplicate word forms (예: "그림을", "그림이") count toward the same root.
+const PARTICLE_SUFFIXES = ['이었어요','였어요','했어요','습니다','이에요','예요','에서','으로','까지','부터','에게','한테','께서','이랑','랑','과','와','도','만','은','는','이','가','을','를','의','에'];
+const STOPWORDS = new Set(['그리고','그런데','그래서','그냥','정말','너무','진짜','정도','같아요','같습니다','있어요','없어요','좋아요','좋았어요','했습니다']);
+
+function extractKeywords(texts){
+  const freq = {};
+  texts.forEach(text=>{
+    text.split(/[\s,.!?~()\[\]\/]+/).forEach(raw=>{
+      let token = raw.trim();
+      if(token.length < 2) return;
+      for(const suf of PARTICLE_SUFFIXES){
+        if(token.length > suf.length + 1 && token.endsWith(suf)){
+          token = token.slice(0, -suf.length);
+          break;
+        }
+      }
+      if(token.length < 2 || STOPWORDS.has(token)) return;
+      freq[token] = (freq[token] || 0) + 1;
+    });
+  });
+  return Object.entries(freq)
+    .filter(([,count]) => count >= 2)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0, 8);
+}
+
+function renderTextAnalysis(rows){
+  const el = document.getElementById('textAnalysis');
+  if(!el) return;
+  const total = rows.length;
+  const texts = rows.map(r => (r[currentTextMovement]||'').toString().trim()).filter(Boolean);
+  const rate = total ? Math.round((texts.length / total) * 100) : 0;
+
+  if(!total){ el.innerHTML = ''; return; }
+
+  const keywords = extractKeywords(texts);
+  const keywordHtml = keywords.length
+    ? `<div class="keyword-chips">${keywords.map(([w,c]) => `<span class="keyword-chip">${escapeHtml(w)}<small>×${c}</small></span>`).join('')}</div>`
+    : `<div class="keyword-chips"><span style="font-size:12px; color:var(--ink-soft);">반복적으로 등장하는 표현이 아직 뚜렷하지 않습니다.</span></div>`;
+
+  el.innerHTML = `
+    <div class="rate">전체 ${total}건 중 <b>${texts.length}건</b> 작성 (참여율 ${rate}%)</div>
+    ${keywordHtml}
+  `;
+}
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- setup / error notice ---------- */
+function showSetupNotice(message){
+  const panel = document.getElementById('setupNotice');
+  panel.style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  panel.innerHTML = `
+    <h2>설정이 필요합니다</h2>
+    ${message ? `<p class="err">${escapeHtml(message)}</p>` : ''}
+    <p>이 페이지 하단 &lt;script&gt; 안의 <code>CONFIG</code> 값을 채워주세요.</p>
+    <ol>
+      <li>설문 응답이 쌓이는 구글 시트를 엽니다.</li>
+      <li>주소창 URL에서 <code>/d/</code> 와 <code>/edit</code> 사이의 긴 문자열을 복사해 <code>SPREADSHEET_ID</code>에 붙여넣습니다.</li>
+      <li>응답이 쌓이는 시트 하단 탭 이름을 <code>SHEET_NAME</code>에 정확히 입력합니다.</li>
+      <li>시트 오른쪽 상단 <b>공유</b> → "링크가 있는 모든 사용자" → <b>뷰어</b> 권한으로 설정합니다.</li>
+    </ol>
+    <p>실제 시트 헤더가 문항 번호(예: <code>2-1</code>)와 다르게 표시되어 있다면(날짜로 자동 변환된 경우 등), <code>FIELD_MAP</code>의 오른쪽 값을 실제 헤더 텍스트로 바꿔주세요.</p>
+  `;
+}
+
+/* ---------- main load ---------- */
+/* ---------- 종합 시사점 (auto-generated implications) ---------- */
+function renderImplications(rows){
+  const el = document.getElementById('implicationsCard');
+  if(!el) return;
+  const total = rows.length;
+
+  if(total < 3){
+    el.innerHTML = `<div class="no-data">응답이 ${total}건으로 아직 적어, 신뢰할 만한 시사점을 도출하기 어렵습니다. 최소 3건 이상 쌓이면 표시됩니다.</div>`;
+    return;
+  }
+
+  const itemsMap = { M2_ITEMS, M3_ITEMS, M4_ITEMS, M8_ITEMS };
+  const bullets = [];
+
+  MOVEMENT_GROUPS.forEach(g => {
+    const stats = computeItemStats(itemsMap[g.items], rows);
+    if(!stats.length) return;
+    const groupAvg = stats.reduce((s,i)=>s+i.avgScore,0) / stats.length;
+    const band = getBand(groupAvg);
+    if(band.tone === 'ok' || band.tone === 'poor'){
+      const statsDesc = [...stats].sort((a,b)=>b.avgScore-a.avgScore);
+      const worst = statsDesc[statsDesc.length-1];
+      bullets.push(`<b>${g.label}</b> 영역이 ${tonePill(band)} 수준(${groupAvg.toFixed(2)}점)입니다. 특히 <b>'${worst.short}'</b>(${worst.avgScore.toFixed(2)}점)에 대한 개선을 우선 검토해보세요.`);
+    }
+  });
+
+  const reapply = avg(rows, 'q8_reapply');
+  const recommend = avg(rows, 'q8_recommend');
+  if(reapply !== null && reapply < 3.5){
+    bullets.push(`재참여 의향이 ${reapply.toFixed(2)}점으로 낮은 편입니다. 프로그램 전반의 만족 요인과 이탈 요인을 함께 살펴볼 필요가 있습니다.`);
+  }
+  if(recommend !== null && recommend < 3.5){
+    bullets.push(`추천 의향이 ${recommend.toFixed(2)}점으로 낮은 편입니다. 참가자 입장에서 주변에 권하기 어려운 이유가 있는지 주관식 응답을 함께 확인해보세요.`);
+  }
+
+  const feedbackCount = rows.map(r => (r.q9_feedback||'').toString().trim()).filter(Boolean).length;
+  if(feedbackCount > 0){
+    bullets.push(`건의사항이 <b>${feedbackCount}건</b> 접수되었습니다. 주관식 응답 탭에서 구체적인 내용을 확인해 다음 워크숍 기획에 반영해보세요.`);
+  }
+
+  if(!bullets.length){
+    bullets.push(`모든 영역이 고르게 양호한 수준으로 평가되었습니다. 특별한 개선 조치보다는 현재 운영 방식을 유지하는 것을 권장합니다.`);
+  }
+
+  if(total < 10){
+    bullets.push(`<span style="color:var(--ink-soft); font-weight:400;">※ 현재 응답 수(${total}건)가 많지 않아, 표본이 늘어나면 진단 내용이 달라질 수 있습니다.</span>`);
+  }
+
+  el.innerHTML = `<ul style="margin:0; padding-left:20px; font-size:13.5px; line-height:1.9; color:var(--ink);">
+    ${bullets.map(b => `<li style="margin-bottom:10px;">${b}</li>`).join('')}
+  </ul>`;
+}
+
+async function loadData(isManual){
+  const btn = document.getElementById('refreshBtn');
+  if(isManual) btn.classList.add('spinning');
+
+  if(!CONFIG.SPREADSHEET_ID){
+    showSetupNotice(null);
+    if(isManual) btn.classList.remove('spinning');
+    return;
+  }
+
+  try{
+    const raw = await fetchSheet();
+    allRows = raw.map(mapRow).filter(r => Object.values(r).some(v => v !== '' && v !== null && v !== undefined));
+  }catch(err){
+    console.error(err);
+    showSetupNotice(err.message || '데이터를 불러오지 못했습니다.');
+    if(isManual) btn.classList.remove('spinning');
+    return;
+  }
+
+  document.getElementById('setupNotice').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  const safe = (fn, label) => { try{ fn(); } catch(e){ console.error('렌더링 실패: ' + label, e); } };
+
+  safe(() => renderOverview(allRows), '개요');
+  safe(() => renderExecSummary(allRows), '종합 진단');
+
+  if(typeof Chart === 'undefined'){
+    ['chartM1','chartM2','chartM2b','chartM3','chartM4','chartM8','chartTrend'].forEach(id=>{
+      resetChartCard(id, '차트 라이브러리(Chart.js)를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+      const insightEl = document.getElementById(id.replace('chart','insight'));
+      if(insightEl) insightEl.innerHTML = '';
+    });
+  } else {
+    safe(() => renderM1(allRows), 'Movement 1');
+    safe(() => renderScaleChart('chartM2', M2_ITEMS, allRows, '프로그램 전반 만족도'), 'Movement 2');
+    safe(() => renderProgramChart(allRows), 'Movement 2-2');
+    safe(() => renderScaleChart('chartM3', M3_ITEMS, allRows, '생활멘토·안전·편의'), 'Movement 3');
+    safe(() => renderScaleChart('chartM4', M4_ITEMS, allRows, '사전 안내·학부모 소통'), 'Movement 4');
+    safe(() => renderScaleChart('chartM8', M8_ITEMS, allRows, '재참여·추천 의향'), 'Movement 8');
+    safe(() => renderTrend(allRows), '응답 추이');
+  }
+
+  safe(() => { renderResponseTabs(); renderResponseList(allRows); renderTextAnalysis(allRows); }, '주관식 응답');
+  safe(() => renderImplications(allRows), '종합 시사점');
+
+  document.getElementById('updatedText').textContent = '마지막 업데이트: ' + new Date().toLocaleTimeString('ko-KR');
+  if(isManual) btn.classList.remove('spinning');
+}
+
+document.getElementById('refreshBtn').addEventListener('click', ()=>loadData(true));
+
+if(CONFIG.SPREADSHEET_ID){
+  const sourceBtn = document.getElementById('sourceDataBtn');
+  sourceBtn.href = `https://docs.google.com/spreadsheets/d/${CONFIG.SPREADSHEET_ID}/edit`;
+  sourceBtn.style.display = 'flex';
+}
+
+loadData(false);
+if(CONFIG.REFRESH_INTERVAL_SEC > 0){
+  setInterval(()=>loadData(false), CONFIG.REFRESH_INTERVAL_SEC * 1000);
+}
+</script>
+</body>
+</html>
