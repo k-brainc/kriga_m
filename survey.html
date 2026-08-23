@@ -333,7 +333,21 @@
 
 <div id="ribbonTrack"><div id="ribbonFill"></div></div>
 
-<div class="stage">
+<div class="stage" id="closedScreen" style="display:none;">
+  <div class="intro-panel" style="text-align:center;">
+    <span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span>
+    <div class="lockup-text">
+      <div class="lockup-year">2026</div>
+      <div class="lockup-name">K예술영재 프로젝트</div>
+      <div class="lockup-sub-row"><span class="lockup-line"></span><span class="lockup-sub">음악 분야 워크숍</span><span class="lockup-line"></span></div>
+    </div>
+    <h1 class="title">설문이 마감되었습니다</h1>
+    <div class="rule"></div>
+    <p class="intro-body" id="closedMessage">소중한 시간 내어 참여해주셔서 감사합니다.<br>모든 응답은 다음 워크숍을 준비하는 데<br>귀하게 쓰이겠습니다.</p>
+  </div>
+</div>
+
+<div class="stage" id="surveyStage">
   <form id="surveyForm">
     <div id="slidesWrap">
 
@@ -635,6 +649,22 @@
 </div>
 
 <script>
+  /* ============================================================
+     설문 마감 설정
+     - 아래 DEADLINE에 마감 일시를 넣으면 그 시각 이후 접속자에게는
+       설문 대신 "마감되었습니다" 화면이 표시됩니다.
+     - 형식: 'YYYY-MM-DDTHH:MM:SS' (예: '2026-08-31T23:59:59')
+     - 비워두면(=''), 마감 기능이 꺼진 상태로 설문이 항상 열려 있습니다.
+     ============================================================ */
+  const SURVEY_DEADLINE = '2026-08-23T00:00:00'; // 예: '2026-08-31T23:59:59'
+
+  if(SURVEY_DEADLINE && new Date() > new Date(SURVEY_DEADLINE)){
+    document.getElementById('surveyStage').style.display = 'none';
+    document.getElementById('ribbonTrack').style.display = 'none';
+    document.getElementById('bottomNav').style.display = 'none';
+    document.getElementById('closedScreen').style.display = 'flex';
+  } else {
+
   const form = document.getElementById('surveyForm');
   const slides = Array.from(document.querySelectorAll('.slide'));
   const totalContentSlides = slides.length - 2; // excludes intro(0) and thankyou(last)
@@ -766,6 +796,8 @@
   }
 
   showSlide(0);
+
+  } // end SURVEY_DEADLINE else block
 </script>
 </body>
 </html>
