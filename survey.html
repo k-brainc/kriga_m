@@ -656,7 +656,7 @@
      - 형식: 'YYYY-MM-DDTHH:MM:SS' (예: '2026-08-31T23:59:59')
      - 비워두면(=''), 마감 기능이 꺼진 상태로 설문이 항상 열려 있습니다.
      ============================================================ */
-  const SURVEY_DEADLINE = '2026-08-23T00:00:00'; // 예: '2026-08-31T23:59:59'
+  const SURVEY_DEADLINE = '2026-08-26T00:00:00'; // 예: '2026-08-31T23:59:59'
 
   if(SURVEY_DEADLINE && new Date() > new Date(SURVEY_DEADLINE)){
     document.getElementById('surveyStage').style.display = 'none';
